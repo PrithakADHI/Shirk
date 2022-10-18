@@ -20,6 +20,8 @@ running = True
 
 story_running = True
 
+textAnim_flag = True
+
 class Animate():
     def __init__(self, start_pos, end_pos, easing_function):
         self.start_pos = start_pos
@@ -93,7 +95,7 @@ class StoryDumps():
                 else:
                     screen.fill((0, 0, 0))
                     pygame.draw.rect(screen, (255, 255, 255), (1280//2 - (500//2), self.end_1, 500, 200), 4)
-                    displayText(self.text_array[0], 1280//2, 720//2, color=(255, 255, 255), font_size=24)
+                    textAnimation(self.text_array[0], 1280//2, 720//2, color=(255, 255, 255), font_size=20)
 
 
 class Player(object):
@@ -452,6 +454,20 @@ def displayText(txt, x, y, font_size=24, color=(0, 0, 0)):
     screen.blit(text, textRect)
     return textRect
 
+
+def textAnimation(txt, x, y, font_size=24, color=(0,0,0)):
+    global textAnim_flag
+    if textAnim_flag:
+        for t_x in txt:
+            displayText(t_x, x, y, font_size, color)
+            x += (font_size * 0.6)
+
+            time.sleep(0.1)
+
+            pygame.display.flip()
+        textAnim_flag = False
+    else:
+        displayText(txt, x, y, font_size, color)
 
 def make_map(fileName):
     global walls
