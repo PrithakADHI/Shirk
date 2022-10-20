@@ -20,8 +20,6 @@ running = True
 
 story_running = True
 
-textAnim_flag = True
-
 class Animate():
     def __init__(self, start_pos, end_pos, easing_function):
         self.start_pos = start_pos
@@ -95,7 +93,7 @@ class StoryDumps():
                 else:
                     screen.fill((0, 0, 0))
                     pygame.draw.rect(screen, (255, 255, 255), (1280//2 - (500//2), self.end_1, 500, 200), 4)
-                    textAnimation(self.text_array[0], 1280//2, 720//2, color=(255, 255, 255), font_size=20)
+                    displayText(self.text_array[0], 1280//2, 720//2, color=(255, 255, 255), font_size=20)
 
 
 class Player(object):
@@ -233,8 +231,6 @@ class Player(object):
                     # self.rect.bottom = wall.rect.top
                     self.hitbox.bottom = wall.rect.top
                     isGrounded = True
-                else:
-                    isGrounded = False
                 if dy < 0:
                     # self.rect.top = wall.rect.bottom
                     headBump = True
@@ -445,29 +441,21 @@ class endLevel():
                          (offset[0] + self.rect.x, offset[1] + self.rect.y, self.rect.w, self.rect.h))
 
 
-def displayText(txt, x, y, font_size=24, color=(0, 0, 0)):
-    font = pygame.font.Font('assets/Fonts/QUIRKYSPRING Regular.ttf', font_size)
-    text = font.render(txt, True, color)
-    textRect = text.get_rect()
-    textRect.center = (x, y)
+def displayText(txt, x, y, font_size=24, color=(0, 0, 0), align='center'):
+    if align == 'center':
+        font = pygame.font.Font('assets/Fonts/QUIRKYSPRING Regular.ttf', font_size)
+        text = font.render(txt, True, color)
+        textRect = text.get_rect()
+        textRect.center = (x, y)
+        screen.blit(text, textRect)
+    elif align == 'left':
+        font = pygame.font.Font('assets/Fonts/QUIRKYSPRING Regular.ttf', font_size)
+        text = font.render(txt, True, color)
+        textRect = text.get_rect()
+        screen.blit(text, (x, y))
 
-    screen.blit(text, textRect)
+
     return textRect
-
-
-def textAnimation(txt, x, y, font_size=24, color=(0,0,0)):
-    global textAnim_flag
-    if textAnim_flag:
-        for t_x in txt:
-            displayText(t_x, x, y, font_size, color)
-            x += (font_size * 0.6)
-
-            time.sleep(0.1)
-
-            pygame.display.flip()
-        textAnim_flag = False
-    else:
-        displayText(txt, x, y, font_size, color)
 
 def make_map(fileName):
     global walls
@@ -687,9 +675,12 @@ while running:
             sys.exit()
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
+
+            if event.key == pygame.K_SPACE and not isGrounded:
+                pass
+            elif event.key == pygame.K_SPACE:
                 jump = True
-                isGrounded = False
+                # isGrounded = False
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             if level != "Menu":
@@ -738,7 +729,7 @@ while running:
         if k[pygame.K_w] and P.mana > 0:
             P.mana -= 50 * dt
             fly = True
-            isGrounded = False
+            # isGrounded = False
             dy = (P.speedy / 2 * -1) * dt
             particle_array.append(particles([P.hitbox.x + 10, P.hitbox.y + 50], [random.randint(0, 20) / 10 - 1, 5],
                                             random.randint(7, 10), [100, 200, 255]))
@@ -749,17 +740,18 @@ while running:
             # dx = (P.speedx * -1) * dt
             if fly == False:
                 no += 13 * dt
-            if isGrounded:
+
+            if not fly:
                 particle_array.append(
                     particles([P.hitbox.x + 10, P.hitbox.y + 50], [random.randint(0, 20) / 10 - 1, 0.25],
-                              random.randint(2, 6), [128, 128, 128]))
+                                random.randint(2, 6), [128, 128, 128]))
 
         if k[pygame.K_d]:
             ori = "Right"
             # dx = P.speedx * dt
             if fly == False:
                 no += 13 * dt
-            if isGrounded:
+            if not fly:
                 particle_array.append(
                     particles([P.hitbox.x + 10, P.hitbox.y + 50], [random.randint(0, 20) / 10 - 1, 0.25],
                               random.randint(2, 6), [128, 128, 128]))
@@ -787,6 +779,7 @@ while running:
         fly = False
 
     if jump:
+        #isGrounded = False
         jump_i += 60 * dt
         accel = 0.13
         # vel = 0
@@ -807,6 +800,7 @@ while running:
                 dy = ((P.speedy) * dt * (vel * .5)) * .75
 
         if jump_i >= (10 + 10):
+            # isGrounded = True
             jump_i = 0
             jump = False
             dJump = False
@@ -921,6 +915,7 @@ while running:
             displayText("That's it :D, Enjoy!!", 650, 50 + 32 + 32 + 32 + 32, 16)
 
 
+        isGrounded = False
 
         P.render(ori, m_no)
         P.move(dx, dy, walls)
